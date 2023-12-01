@@ -54,7 +54,7 @@ const readHeader = (data: Buffer) => {
 
   if (header.payloadSize >= 0x8000 || header.payloadSize < 0) {
     // weird payload size, probably without a header
-    return "(Packet doesn't have a header)"
+    return null
   }
 
   return header
@@ -109,11 +109,15 @@ server.listen(PORT, '127.0.0.1', () => {
     sock.on('data', (data) => {
       client.write(data)
       console.log('\x1b[36m%s\x1b[0m', '  Client -> Server  ')
-      console.log(readHeader(data))
+      
+      const header = readHeader(data)
+      console.log(header ?? "(Packet doesn't have a header)")
 
-      fs.mkdir(`./blaze/packets/${folder}/client`, { recursive: true }, () => {
-        fs.writeFileSync(`./blaze/packets/${folder}/client/${clientPackets}.tdf`, data)
-      })
+      if (header && header.msgType != 'PING') {
+        fs.mkdir(`./blaze/packets/${folder}/client`, { recursive: true }, () => {
+          fs.writeFileSync(`./blaze/packets/${folder}/client/${clientPackets}.tdf`, data)
+        })
+      }
 
       clientPackets++
     })
@@ -121,11 +125,15 @@ server.listen(PORT, '127.0.0.1', () => {
     client.on('data', (data) => {
       sock.write(data)
       console.log('\x1b[33m%s\x1b[0m', '  Client <- Server ')
-      console.log(readHeader(data))
 
-      fs.mkdir(`./blaze/packets/${folder}/server`, { recursive: true }, () => {
-        fs.writeFileSync(`./blaze/packets/${folder}/server/${serverPackets}.tdf`, data)
-      })
+      const header = readHeader(data)
+      console.log(header ?? "(Packet doesn't have a header)")
+
+      if (header && header.msgType != 'PING_REPLY') {
+        fs.mkdir(`./blaze/packets/${folder}/server`, { recursive: true }, () => {
+          fs.writeFileSync(`./blaze/packets/${folder}/server/${serverPackets}.tdf`, data)
+        })
+      }
 
       serverPackets++
     })
