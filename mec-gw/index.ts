@@ -47,7 +47,7 @@ app.get('*', async (req, res) => {
 
   // weird workaround to send binary data
   fs.writeFileSync('./mec-gw/blob.bin', Buffer.from(response))
-  res.status(real.status).sendFile(__dirname + '/mec-gw/blob.bin')
+  res.status(real.status).sendFile(__dirname + '/blob.bin')
 
   console.log('\x1b[33m%s\x1b[0m', 'Response: ' + req.url)
   console.log(`Received ${response.byteLength / 1024} KB file`)
